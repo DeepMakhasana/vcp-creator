@@ -1,6 +1,6 @@
 import { ICourseFullDetailResponse, ICourseFullDetails } from "@/types/course";
 import { Card, CardContent, CardHeader } from "../ui/card";
-import { Trash, Edit, LinkIcon, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Trash, Edit, LinkIcon, SlidersHorizontal, Loader2, Grip } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { clientEndpoints, courseImageBaseUrl } from "@/lib/constants";
 import { formateDateTime } from "@/lib/utils";
@@ -9,11 +9,14 @@ import useCRUD from "@/hooks/useCRUD";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteCourse } from "@/api/course";
 import { toast } from "react-toastify";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const CreatedCourse = ({ course }: { course: ICourseFullDetails }) => {
   const navigate = useNavigate();
   const { edit } = useCRUD();
   const queryClient = useQueryClient();
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: course.order });
 
   // delete lesson mutation
   const { mutate, isPending } = useMutation<ICourseFullDetailResponse, Error, number>({
@@ -34,9 +37,20 @@ const CreatedCourse = ({ course }: { course: ICourseFullDetails }) => {
   function deleteCourseHandle(id: number) {
     mutate(id);
   }
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(
+      transform
+        ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } // Restrict to vertical dragging and provide default scales
+        : null
+    ),
+    cursor: "default",
+  };
+
   return (
-    <Card className="flex flex-col md:flex-row">
-      <CardHeader className="p-3">
+    <Card className="flex flex-col md:flex-row" ref={setNodeRef} style={style} {...attributes}>
+      <CardHeader className="p-3 min-h-36 bg-slate-100">
         <img
           src={`${courseImageBaseUrl}${course.image}`}
           alt={course.title}
@@ -57,6 +71,12 @@ const CreatedCourse = ({ course }: { course: ICourseFullDetails }) => {
               <SlidersHorizontal />
               Manage
             </Button>
+            <Link to={`/courses/${course.id}`}>
+              <Button variant={"outline"}>
+                <LinkIcon className="h-4 w-4" />
+                Preview
+              </Button>
+            </Link>
             <Button variant={"outline"} size={"icon"} onClick={() => edit(String(course.id))}>
               <Edit />
             </Button>
@@ -72,14 +92,10 @@ const CreatedCourse = ({ course }: { course: ICourseFullDetails }) => {
           </div>
           {/* <div className="border rounded-lg px-3 py-1 inline text-sm text-muted-foreground">Manage</div> */}
         </div>
-        <div>
-          <Link
-            to={`/courses/${course.id}`}
-            className="flex gap-2 justify-center items-center border rounded-lg px-4 py-2"
-          >
-            <LinkIcon className="h-4 w-4" />
-            Preview
-          </Link>
+        <div className="h-full flex justify-center items-center">
+          <Button variant={"outline"} size={"icon"} {...listeners}>
+            <Grip />
+          </Button>
         </div>
       </CardContent>
     </Card>

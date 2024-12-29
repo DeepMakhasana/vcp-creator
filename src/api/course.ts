@@ -8,6 +8,8 @@ import {
   ILessonResponse,
   IModule,
   IModuleResponse,
+  IOrderUpdatePayload,
+  IOrderUpdateResponse,
   Lesson,
   Module,
 } from "@/types/course";
@@ -21,6 +23,11 @@ export async function updateCourse(payload: ICourseFullDetail): Promise<ICourseF
   const courseId = payload.id;
   delete payload.id;
   const { data } = await axiosInstance.put(`${endpoints.course.main}/${courseId}`, payload);
+  return data;
+}
+
+export async function updateCourseOrder(payload: IOrderUpdatePayload[]): Promise<IOrderUpdateResponse> {
+  const { data } = await axiosInstance.put(`${endpoints.course.order}`, { orders: payload });
   return data;
 }
 
@@ -56,6 +63,11 @@ export async function updateModule(payload: IModule): Promise<IModuleResponse> {
   return data;
 }
 
+export async function updateModuleOrder(payload: IOrderUpdatePayload[]): Promise<IOrderUpdateResponse> {
+  const { data } = await axiosInstance.put(`${endpoints.module.order}`, { orders: payload });
+  return data;
+}
+
 export async function deleteModule(id: number): Promise<IModuleResponse> {
   const { data } = await axiosInstance.delete(`${endpoints.module.main}/${id}`);
   return data;
@@ -75,6 +87,11 @@ export async function updateLesson(payload: ILessonPayload): Promise<ILessonResp
   const lessonId = payload.id;
   delete payload.id;
   const { data } = await axiosInstance.put(`${endpoints.lesson.main}/${lessonId}`, payload);
+  return data;
+}
+
+export async function updateLessonOrder(payload: IOrderUpdatePayload[]): Promise<IOrderUpdateResponse> {
+  const { data } = await axiosInstance.put(`${endpoints.lesson.order}`, { orders: payload });
   return data;
 }
 

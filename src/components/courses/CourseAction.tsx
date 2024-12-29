@@ -9,11 +9,12 @@ import { ChangeEvent, useRef, useState } from "react";
 import TextEditor from "./text-editer";
 import imagePlaceholder from "../../assets/placeholder.svg";
 import { courseSchema } from "@/schema/course";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import {
   ICourseFullDetail,
   ICourseFullDetailResponse,
+  ICourseFullDetails,
   IImageUploadPayload,
   IS3PutObjectPayload,
   IS3PutObjectResponse,
@@ -28,6 +29,7 @@ export const InitialCourseValues: ICourseFullDetail = {
   title: "",
   description: "",
   price: "",
+  duration: "",
   highlights: "",
   outcomes: "",
   prerequisites: "",
@@ -46,14 +48,17 @@ const CourseAction = ({
   const [title, setTitle] = useState<string>(initialValues.title);
   const [description, setDescription] = useState<string>(initialValues.description);
   const [price, setPrice] = useState<number | string>(initialValues.price);
+  const [duration, setDuration] = useState<number | string>(initialValues.duration);
   const [highlights, setHighlights] = useState<string>(initialValues.highlights);
   const [outcomes, setOutcomes] = useState<string>(initialValues.outcomes);
   const [prerequisites, setPrerequisites] = useState<string>(initialValues.prerequisites);
+
   const [file, setFile] = useState<File | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>(initialValues.image);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   function validateImageSize(size: number) {
     const MAX_SIZE = 2 * 1024 * 1024; // 2 MB in bytes
@@ -95,6 +100,11 @@ const CourseAction = ({
     mutationFn: mode === Mode.Create ? createCourse : updateCourse,
     onSuccess: (res) => {
       handleDiscard();
+      queryClient.setQueryData(["courses"], (old: ICourseFullDetails[]) =>
+        mode === Mode.Create
+          ? [...old, res.course]
+          : old.map((course) => (course.id === res.course.id ? res.course : course))
+      );
       toast(res.message);
       navigate("/dashboard/courses");
     },
@@ -118,6 +128,7 @@ const CourseAction = ({
         title,
         description,
         price: Number(price),
+        duration: Number(duration),
         status: false,
         highlights,
         outcomes,
@@ -165,6 +176,7 @@ const CourseAction = ({
     setTitle("");
     setDescription("");
     setPrice("");
+    setDuration("");
     setPrerequisites("");
     setHighlights("");
     setOutcomes("");
@@ -183,12 +195,15 @@ const CourseAction = ({
       title,
       description,
       price: Number(price ? price : 0),
+      duration: Number(duration),
       status: false,
       highlights,
       outcomes,
       prerequisites,
       image: file?.name || initialValues.image,
     });
+
+    console.log(result);
     if (!result.success) {
       // Extract validation errors
       const errors = result.error.errors.map((err) => err.message);
@@ -206,12 +221,13 @@ const CourseAction = ({
         { type: "error" }
       );
     } else {
-      if (uploadedFileName === initialValues.image) {
+      if (uploadedFileName === initialValues.image && initialValues.image) {
         const payload: ICourseFullDetail = {
           id: initialValues.id,
           title,
           description,
           price: Number(price),
+          duration: Number(duration),
           status: false,
           highlights,
           outcomes,
@@ -286,13 +302,14 @@ const CourseAction = ({
             <Card x-chunk="dashboard-07-chunk-0">
               <CardHeader>
                 <CardTitle className="font-medium">Courses Details</CardTitle>
-                <CardDescription>Main details of course</CardDescription>
+                <CardDescription>Main details of course, All fields are required.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6">
                   <div className="grid gap-3">
                     <Label htmlFor="name">Title</Label>
                     <Input
+                      autoComplete="off"
                       id="name"
                       type="text"
                       value={title}
@@ -314,12 +331,25 @@ const CourseAction = ({
                   <div className="grid gap-3">
                     <Label htmlFor="name">Price</Label>
                     <Input
+                      autoComplete="off"
                       id="name"
-                      type="text"
+                      type="number"
                       value={price}
                       onChange={(e) => setPrice(Number(e.target.value))}
                       className="w-full"
-                      placeholder="399.00"
+                      placeholder="499"
+                    />
+                  </div>
+                  <div className="grid gap-3">
+                    <Label htmlFor="name">Duration</Label>
+                    <Input
+                      autoComplete="off"
+                      id="name"
+                      type="number"
+                      value={duration}
+                      onChange={(e) => setDuration(Number(e.target.value))}
+                      className="w-full"
+                      placeholder="In Day"
                     />
                   </div>
                 </div>

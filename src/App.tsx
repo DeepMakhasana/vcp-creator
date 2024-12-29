@@ -14,6 +14,7 @@ import Register from "./pages/auth/Register";
 
 import "./App.css";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import Lesson from "./pages/dashboard/course/Lesson";
 
 // Creating the router with route configurations
 const router = createBrowserRouter([
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
       { path: "courses", element: <Courses /> },
       { path: "courses/:courseId/modules", element: <CourseModules /> },
       { path: "courses/:courseId/modules/:moduleId/lessons", element: <CourseLessons /> },
+      { path: "courses/:courseId/modules/:moduleId/lessons/:lessonId", element: <Lesson /> },
       { path: "students", element: <Students /> },
       { path: "purchases", element: <Purchase /> },
       // Catch-all for unknown routes under dashboard section

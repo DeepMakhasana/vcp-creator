@@ -1,6 +1,7 @@
 import axiosInstance from "@/lib/axiosInstance";
 import { endpoints } from ".";
 import {
+  CreatorUser,
   loginPayload,
   loginResponse,
   registerPayload,
@@ -38,5 +39,10 @@ export async function creatorLogin(payload: loginPayload): Promise<loginResponse
 
 export async function creatorPasswordReset(payload: resetPayload): Promise<resetResponse> {
   const { data } = await axiosInstance.post(endpoints.auth.resetPassword, payload);
+  return data;
+}
+
+export async function fetchCreatorUser(id: number): Promise<CreatorUser[]> {
+  const { data } = await axiosInstance.get(`${endpoints.auth.users}/${id}`);
   return data;
 }

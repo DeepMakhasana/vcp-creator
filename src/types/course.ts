@@ -18,6 +18,7 @@ export interface ILessonPayload {
   isVideo: boolean;
   title: string;
   moduleId?: number;
+  url?: string;
 }
 
 export type LessonType = {
@@ -33,6 +34,7 @@ export interface ICourseFullDetail {
   title: string;
   description: string;
   price: number | string;
+  duration: number | string;
   image: string;
   highlights: string;
   outcomes: string;
@@ -47,6 +49,7 @@ export enum Mode {
 
 export interface ICourseFullDetails extends ICourseFullDetail {
   id: number;
+  order: number;
   creatorId: number;
   createdAt: Date;
   updatedAt: Date;
@@ -102,11 +105,21 @@ export interface Task {
   resourceId: string;
 }
 
+export interface publicResource {
+  id: number;
+  lessonId: number;
+  url: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Lesson {
   id: number;
   title: string;
+  order: number;
   moduleId: number;
   isVideo: boolean;
+  public: publicResource | null;
   video: Video | null;
   tasks: Task[];
 }
@@ -114,7 +127,17 @@ export interface Lesson {
 export interface Module {
   id: number;
   title: string;
+  order: number;
   courseId: number;
   createdAt: string;
   lessons: Lesson[];
+}
+
+export interface IOrderUpdatePayload {
+  id: number;
+  order: number;
+}
+
+export interface IOrderUpdateResponse {
+  message: string;
 }

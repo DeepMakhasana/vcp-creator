@@ -17,7 +17,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     const token = getToken();
     if (token) {
       const decodedUser: User = jwtDecode(token);
-      if (decodedUser.userRole === "creator") {
+      if (decodedUser.roles.includes("creator")) {
         setIsAuthenticated(true);
         setUser(decodedUser);
       }

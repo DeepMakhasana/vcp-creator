@@ -2,13 +2,45 @@ import CourseAction, { InitialCourseValues } from "@/components/courses/CourseAc
 import CreatedCourse from "@/components/courses/CreatedCourse";
 import useCRUD from "@/hooks/useCRUD";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { ICourseFullDetail, ICourseFullDetails, Mode } from "@/types/course";
-import { fetchCourse, fetchOwnCourses } from "@/api/course";
-import { useQuery } from "@tanstack/react-query";
+import { Loader2, Plus } from "lucide-react";
+import { ICourseFullDetail, ICourseFullDetails, IOrderUpdatePayload, IOrderUpdateResponse, Mode } from "@/types/course";
+import { fetchCourse, fetchOwnCourses, updateCourseOrder } from "@/api/course";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, closestCorners } from "@dnd-kit/core";
+import {
+  arrayMove,
+  sortableKeyboardCoordinates,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Dispatch, SetStateAction, useState } from "react";
+import { toast } from "react-toastify";
 
 const Courses = () => {
   const { params, create } = useCRUD();
+  const [orderUpdatePayload, setOrderUpdatePayload] = useState<IOrderUpdatePayload[]>([]);
+
+  // order update mutation
+  const { mutate: orderUpdateMutation, isPending: orderUpdatePending } = useMutation<
+    IOrderUpdateResponse,
+    Error,
+    IOrderUpdatePayload[]
+  >({
+    mutationKey: ["ModuleOrderUpdate"],
+    mutationFn: updateCourseOrder,
+    onSuccess: (res) => {
+      toast(res.message);
+      setOrderUpdatePayload([]);
+    },
+    onError: (error: any) => {
+      console.log("request fail: ", error);
+      toast(error?.response?.data?.message, { type: "error" });
+    },
+  });
+
+  function handleOrderUpdate() {
+    orderUpdateMutation(orderUpdatePayload);
+  }
 
   if (params.get("action") === "create") {
     return <CourseAction initialValues={InitialCourseValues} mode={Mode.Create} />;
@@ -25,22 +57,58 @@ const Courses = () => {
           <h1 className="text-2xl font-medium">Courses</h1>
           <p className="text-sm hidden text-muted-foreground sm:block">View and manage courses</p>
         </div>
-        <div>
+        <div className="flex gap-2 items-center">
+          {orderUpdatePayload.length > 0 && (
+            <Button disabled={orderUpdatePending} onClick={handleOrderUpdate} className="flex gap-2 items-center">
+              {orderUpdatePending && <Loader2 className="animate-spin" />}
+              Update Order
+            </Button>
+          )}
           <Button onClick={create}>
             <Plus /> Add Course
           </Button>
         </div>
       </div>
-      <OwnCourses />
+      <OwnCourses setOrderUpdatePayload={setOrderUpdatePayload} />
     </main>
   );
 };
 
-const OwnCourses = () => {
+const OwnCourses = ({
+  setOrderUpdatePayload,
+}: {
+  setOrderUpdatePayload: Dispatch<SetStateAction<IOrderUpdatePayload[]>>;
+}) => {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<ICourseFullDetails[], Error>({
     queryKey: ["courses"],
     queryFn: fetchOwnCourses,
   });
+
+  // Dnd
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id === over.id) return;
+
+    if (data) {
+      const activeIndex = data.findIndex((course) => course.order === active.id);
+      const overIndex = data.findIndex((course) => course.order === over.id);
+
+      const updatedData = arrayMove(data, activeIndex, overIndex);
+      const updateOrder = updatedData.map((course, index) => ({ id: course.id, order: index + 1 }));
+      queryClient.setQueryData(["courses"], () => updatedData);
+
+      setOrderUpdatePayload(updateOrder);
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   if (isLoading) {
     return <p>Loading...</p>;
@@ -54,11 +122,15 @@ const OwnCourses = () => {
   }
 
   return (
-    <div className="grid gap-4">
-      {data?.map((course) => (
-        <CreatedCourse key={course.id} course={course} />
-      ))}
-    </div>
+    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      <div className="grid gap-4">
+        <SortableContext items={data ? data.map((course) => course.order) : []} strategy={verticalListSortingStrategy}>
+          {data?.map((course) => (
+            <CreatedCourse key={course.id} course={course} />
+          ))}
+        </SortableContext>
+      </div>
+    </DndContext>
   );
 };
 

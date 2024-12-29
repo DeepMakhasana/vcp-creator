@@ -11,14 +11,27 @@ const axiosInstance = axios.create({
   },
 });
 
-// Set up the token (this example assumes token is stored in localStorage)
-const token = localStorage.getItem(constants.TOKEN);
+// Add a request interceptor
+axiosInstance.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      // Fetch the token dynamically from localStorage
+      const token = localStorage.getItem(constants.TOKEN);
 
-if (token) {
-  // Set the Authorization header with the Bearer token
-  axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-} else {
-  delete axiosInstance.defaults.headers.common["Authorization"];
-}
+      if (token) {
+        // Set the Authorization header dynamically
+        config.headers["Authorization"] = `Bearer ${token}`;
+      } else {
+        // Remove the Authorization header if no token exists
+        delete config.headers["Authorization"];
+      }
+    }
+    return config;
+  },
+  (error) => {
+    // Handle errors
+    return Promise.reject(error);
+  }
+);
 
 export default axiosInstance;

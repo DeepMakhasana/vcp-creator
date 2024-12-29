@@ -71,6 +71,17 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+ul {
+  padding-left: 20px;
+  /* Indents the list */
+}
+
+li {
+  list-style: circle;
+  list-style-position: outside;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -99,6 +110,7 @@ button:focus-visible {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -126,10 +138,12 @@ button:focus-visible {
     --chart-5: 340 75% 55%
   }
 }
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

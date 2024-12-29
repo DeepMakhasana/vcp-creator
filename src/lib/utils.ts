@@ -1,4 +1,4 @@
-import { ICourse, LessonType, ModuleType } from "@/types/course";
+import { ICourse, LessonType } from "@/types/course";
 import { StudentType } from "@/types/student";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -93,38 +93,38 @@ export const coursesData: ICourse[] = [
   },
 ];
 
-export const courseModules: ModuleType[] = [
-  {
-    id: 1,
-    courseId: 1,
-    title: "Introduction to docker",
-    lessonsCount: 4,
-  },
-  {
-    id: 2,
-    courseId: 1,
-    title: "Docker images",
-    lessonsCount: 6,
-  },
-  {
-    id: 3,
-    courseId: 1,
-    title: "Docker container",
-    lessonsCount: 2,
-  },
-  {
-    id: 4,
-    courseId: 1,
-    title: "Docker orchetaion",
-    lessonsCount: 7,
-  },
-  {
-    id: 5,
-    courseId: 1,
-    title: "Docker file",
-    lessonsCount: 3,
-  },
-];
+// export const courseModules: ModuleType[] = [
+//   {
+//     id: 1,
+//     courseId: 1,
+//     title: "Introduction to docker",
+//     lessonsCount: 4,
+//   },
+//   {
+//     id: 2,
+//     courseId: 1,
+//     title: "Docker images",
+//     lessonsCount: 6,
+//   },
+//   {
+//     id: 3,
+//     courseId: 1,
+//     title: "Docker container",
+//     lessonsCount: 2,
+//   },
+//   {
+//     id: 4,
+//     courseId: 1,
+//     title: "Docker orchetaion",
+//     lessonsCount: 7,
+//   },
+//   {
+//     id: 5,
+//     courseId: 1,
+//     title: "Docker file",
+//     lessonsCount: 3,
+//   },
+// ];
 
 export const courseLessons: LessonType[] = [
   {

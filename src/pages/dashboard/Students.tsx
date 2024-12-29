@@ -1,7 +1,26 @@
+import { fetchCreatorUser } from "@/api/auth";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { students } from "@/lib/utils";
+import useAuthContext from "@/context/auth/useAuthContext";
+import { formateDateTime } from "@/lib/utils";
+import { CreatorUser } from "@/types/auth";
+import { useQuery } from "@tanstack/react-query";
 
 const Students = () => {
+  const { user } = useAuthContext();
+  const { data, isLoading, isError, error } = useQuery<CreatorUser[], Error>({
+    queryKey: ["users"],
+    queryFn: () => fetchCreatorUser(Number(user?.id)),
+    enabled: !!user,
+  });
+
+  if (isLoading || data === undefined) {
+    return <p>Loading...</p>;
+  }
+
+  if (isError) {
+    return <p>{error.message}</p>;
+  }
+
   return (
     <main className="p-4 md:p-8">
       <div>
@@ -17,17 +36,17 @@ const Students = () => {
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Number</TableHead>
-            <TableHead className="text-center">Purchase count</TableHead>
+            <TableHead className="text-center">Date of Registration</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {students.map((student) => (
+          {data.map((student) => (
             <TableRow key={student.id}>
               <TableCell className="font-medium">{student.id}</TableCell>
               <TableCell>{student.name}</TableCell>
               <TableCell>{student.email}</TableCell>
-              <TableCell>{student.number}</TableCell>
-              <TableCell className="text-center">{student.purchaseCount}</TableCell>
+              <TableCell>{student.mobile}</TableCell>
+              <TableCell className="text-center">{formateDateTime(student.createdAt)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

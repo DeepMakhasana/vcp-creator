@@ -61,7 +61,15 @@ export type User = {
   domain: string;
   bio: string;
   role: string;
-  userRole: "student" | "creator";
+  roles: string[];
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type CreatorUser = {
+  id: number;
+  name: string;
+  email: string;
+  mobile: string;
+  createdAt: Date;
 };

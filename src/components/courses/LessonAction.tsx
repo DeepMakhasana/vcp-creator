@@ -18,21 +18,40 @@ import { createLesson, updateLesson } from "@/api/course";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
-import { ReactNode, useState } from "react";
-import { File, Video } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
+import { File, LockKeyhole, LockKeyholeOpen, Video } from "lucide-react";
 import { RadioGroup } from "@radix-ui/react-radio-group";
 
-const formSchema = z.object({
-  title: z
-    .string()
-    .min(2, {
-      message: "Module must be at least 2 characters.",
-    })
-    .max(100, { message: "Module must be at less then 100 characters." }),
-  type: z.string().min(2, {
-    message: "Type of lesson is required",
-  }),
-});
+const formSchema = z
+  .object({
+    title: z
+      .string()
+      .min(2, {
+        message: "Module must be at least 2 characters.",
+      })
+      .max(100, { message: "Module must be at less then 100 characters." }),
+    type: z.string().min(2, {
+      message: "Type of lesson is required",
+    }),
+    visibility: z.string().min(2, {
+      message: "Type of visibility is required",
+    }),
+    url: z.union([z.string().url(), z.literal("")]),
+  })
+  .refine((data) => (data.visibility == "unlock" && data.url != "") || (data.visibility == "lock" && data.url == ""), {
+    message: "URL is required when visibility is set to 'unlock'.",
+    path: ["url"], // Targets the `url` field for error messages
+  })
+  .refine(
+    (data) =>
+      (data.visibility == "unlock" && data.type == "task" && data.url.includes("drive")) ||
+      (data.visibility == "unlock" && data.type == "video" && data.url.includes("youtu")) ||
+      data.visibility === "lock",
+    {
+      message: "Type of lesson and URL not match, enter valid URL.",
+      path: ["url"], // Targets the `url` field for error messages
+    }
+  );
 
 interface ILessonActionProps {
   trigger: ReactNode;
@@ -52,6 +71,8 @@ const LessonAction = ({ trigger, mode, editLesson }: ILessonActionProps) => {
     defaultValues: {
       title: isCreateMode ? "" : editLesson?.title,
       type: isCreateMode ? "" : editLesson?.isVideo ? "video" : "task",
+      visibility: isCreateMode ? "" : editLesson?.url ? "unlock" : "lock",
+      url: isCreateMode ? "" : editLesson?.url,
     },
   });
 
@@ -63,12 +84,12 @@ const LessonAction = ({ trigger, mode, editLesson }: ILessonActionProps) => {
       // queryClient.invalidateQueries({ queryKey: ["course", { id: moduleId }] });
       queryClient.setQueryData(["lessons", { id: moduleId }], (old: Lesson[]) =>
         mode === Mode.Create
-          ? [...old, { ...res.lesson, lessons: [] }]
-          : old.map((lesson) => (lesson.id === res.lesson.id ? { ...lesson, ...res.lesson } : lesson))
+          ? [...old, res.lesson]
+          : old.map((lesson) => (lesson.id === res.lesson.id ? res.lesson : lesson))
       );
       toast(res.message);
       setIsDialogOpen(false);
-      form.reset({ title: "", type: "" });
+      if (isCreateMode) form.reset({ title: "", type: "", visibility: "", url: "" });
     },
     onError: (error: any) => {
       console.log("request fail: ", error);
@@ -85,14 +106,23 @@ const LessonAction = ({ trigger, mode, editLesson }: ILessonActionProps) => {
       moduleId: Number(moduleId),
       title: values.title,
       isVideo: values.type === "video" ? true : false,
+      url: "",
     };
+    if (values.visibility == "unlock") {
+      payload.url = values.url;
+    }
     if (!isCreateMode) {
       payload.id = editLesson?.id;
     }
     mutate(payload);
   }
 
-  console.log(form.getValues());
+  useEffect(() => {
+    console.log("change");
+    if (form.watch("visibility") == "lock") {
+      form.setValue("url", "");
+    }
+  }, [form.watch("visibility"), form.watch("visibility")]);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -157,6 +187,73 @@ const LessonAction = ({ trigger, mode, editLesson }: ILessonActionProps) => {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type of visibility</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      value={field.value} // Controlled by React Hook Form
+                      onValueChange={(value) => field.onChange(value)} // Updates form state
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      <Button
+                        type="button"
+                        variant={"outline"}
+                        size={"lg"}
+                        className={field.value === "unlock" ? "border-2 border-black" : ""}
+                        onClick={() => field.onChange("unlock")}
+                      >
+                        <LockKeyholeOpen /> Unlock
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={"outline"}
+                        size={"lg"}
+                        className={field.value === "lock" ? "border-2 border-black" : ""}
+                        onClick={() => field.onChange("lock")}
+                      >
+                        <LockKeyhole /> Lock
+                      </Button>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormDescription>Select the type of visibility.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {form.watch("visibility") === "unlock" && form.watch("visibility") && (
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {form.watch("type") === "video" ? "Public YouTube Video URL" : "Public File Drive URL"}
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder={
+                          form.watch("type") === "video"
+                            ? "https://youtu.be/SQCbq86j6QU?si=oDgF22CB9UtijbL9"
+                            : "https://drive.google.com/someting"
+                        }
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {form.watch("type") === "video"
+                        ? "Copy from Go to youtube video > share > copy"
+                        : "Copy from Go to drive file > more option > Get link > set general access - Anyone with the link > click on Get link"}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               {isCreateMode ? (
                 <Button type="submit">{isPending ? "Creating.." : "Create"}</Button>

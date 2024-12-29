@@ -9,7 +9,7 @@ interface ITextEditorProps {
 
 const TextEditor = ({ value, setValue }: ITextEditorProps) => {
   const modules = {
-    toolbar: [["bold", "italic"], [{ list: "bullet" }]],
+    toolbar: [[{ list: "bullet" }]],
   };
 
   const handleChange = (value: string) => {

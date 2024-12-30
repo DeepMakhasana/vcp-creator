@@ -2,7 +2,7 @@ import { deleteModule, fetchCourseModule, updateModuleOrder } from "@/api/course
 import ModuleAction from "@/components/courses/ModuleAction";
 import { Button } from "@/components/ui/button";
 import { DialogTrigger } from "@/components/ui/dialog";
-import { Trash, Edit, Plus, ChevronLeft, Grip, Loader2 } from "lucide-react";
+import { Trash, Edit, Plus, ChevronLeft, Grip, Loader2, Folder } from "lucide-react";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IModuleResponse, IOrderUpdatePayload, IOrderUpdateResponse, Mode, Module } from "@/types/course";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -216,7 +216,12 @@ const ModuleRow = ({ module, handleModuleDelete, deletePending }: ModuleRowType)
           to={`/dashboard/courses/${module.courseId}/modules/${module.id}/lessons`}
           className="cursor-pointer line-clamp-1"
         >
-          {module.title}
+          <div className="flex gap-2 items-center">
+            <div className="border p-2 rounded">
+              <Folder className="text-gray-900 w-5 h-5" />
+            </div>
+            <span className="font-medium line-clamp-1">{module.title}</span>
+          </div>
         </Link>
       </TableCell>
       <TableCell className="py-4">

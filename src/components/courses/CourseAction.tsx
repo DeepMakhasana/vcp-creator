@@ -102,7 +102,9 @@ const CourseAction = ({
       handleDiscard();
       queryClient.setQueryData(["courses"], (old: ICourseFullDetails[]) =>
         mode === Mode.Create
-          ? [...old, res.course]
+          ? old.length == 0
+            ? [res.course]
+            : [...old, res.course]
           : old.map((course) => (course.id === res.course.id ? res.course : course))
       );
       toast(res.message);

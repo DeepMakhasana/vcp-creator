@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useLayoutEffect } from "react";
+import { useLayoutEffect } from "react";
 import useAuthContext from "./context/auth/useAuthContext";
 import { allowPath } from "./lib/constants";
 

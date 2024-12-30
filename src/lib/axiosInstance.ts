@@ -1,7 +1,8 @@
 import axios from "axios";
 import { constants } from "./constants";
 
-export const BASEURL = "http://localhost:8000/api";
+export const BASEURL = "https://mjd4dzx78k.execute-api.ap-south-1.amazonaws.com/dev/api";
+// export const BASEURL = "http://localhost:8000/api";
 
 const axiosInstance = axios.create({
   baseURL: BASEURL,

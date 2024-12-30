@@ -15,6 +15,7 @@ import {
 } from "@dnd-kit/sortable";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const Courses = () => {
   const { params, create } = useCRUD();
@@ -162,7 +163,9 @@ const NoCourses = () => {
       <div className="flex flex-col items-center gap-1 text-center">
         <h3 className="text-2xl font-bold tracking-tight">You have no courses</h3>
         <p className="text-sm text-muted-foreground">You can start selling as soon as you add a course.</p>
-        <Button className="mt-4">Add Course</Button>
+        <Link to="/dashboard/courses?action=create">
+          <Button className="mt-4">Add Course</Button>
+        </Link>
       </div>
     </div>
   );

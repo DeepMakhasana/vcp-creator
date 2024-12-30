@@ -32,11 +32,11 @@ const Students = () => {
         <TableCaption>A list of students</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Id</TableHead>
+            <TableHead className="w-[20px]">Id</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Number</TableHead>
-            <TableHead className="text-center">Date of Registration</TableHead>
+            <TableHead className="text-center">Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
